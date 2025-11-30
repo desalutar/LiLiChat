@@ -17,6 +17,7 @@ WORKDIR /app
 COPY --from=builder /app/lilychat .
 
 COPY config ./config
+COPY --from=builder /app/internal ./internal
 
 ENV POSTGRES_DSN=postgres://postgres:password@db:5432/lilychat?sslmode=disable
 ENV SERVER_PORT=9900

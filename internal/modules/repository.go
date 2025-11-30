@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"lilyChat/internal/infrastructure/components"
 	auth "lilyChat/internal/modules/auth/repository"
+	storage "lilyChat/internal/infrastructure/db"
 )
 
 type Repository struct {
@@ -11,7 +12,8 @@ type Repository struct {
 }
 
 func NewRepository(db *sql.DB, componenst *components.Components) *Repository {
-	authRepo := auth.NewAuthRepo(db)
+	storageRepo := storage.NewPostgresRepo(db)
+	authRepo := auth.NewAuthRepo(db, storageRepo)     
 
 	return &Repository{
 		auth: authRepo,

@@ -9,3 +9,5 @@ jwt:
 server:
   port: "9900"                
   shutdown_timeout: "5s"      
+
+POSTGRES_DSN: postgres://postgres:password@db:5432/lilychat?sslmode=disable

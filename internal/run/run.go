@@ -8,14 +8,11 @@ import (
 	"lilyChat/internal/infrastructure/db"
 	"lilyChat/internal/infrastructure/components"
 	"lilyChat/internal/infrastructure/config"
-	"lilyChat/internal/infrastructure/db/migrations"
 	"lilyChat/internal/infrastructure/routes"
 	"lilyChat/internal/infrastructure/server"
 	"lilyChat/internal/infrastructure/utils"
 	"lilyChat/internal/modules"
 )
-
-const migrationsPATH = "./internal/infrastructure/db/migrations/sql"
 
 type AppConf struct {
 	Cfg        *config.Config
@@ -39,10 +36,6 @@ func Run() *AppConf {
 
 	sqlDB := db.InitDB(cfg.PostgresDSN)
 	pgRepo := db.NewPostgresRepo(sqlDB)
-
-	if err := migrations.RunMigrations(pgRepo.DB, migrationsPATH); err != nil {
-		log.Fatal("Error running migrations:", err)
-	}
 
 	repo := modules.NewRepository(sqlDB, comps)
 	service := modules.NewServices(*repo, comps)

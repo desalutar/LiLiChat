@@ -19,10 +19,11 @@ type AuthRepo struct {
 	table		string 	
 }
 
-func NewAuthRepo(sqlDB *sql.DB) *AuthRepo {
+func NewAuthRepo(sqlDB *sql.DB, userRepo db.Repository) *AuthRepo {
 	return &AuthRepo{
-		sqlDB: 		sqlDB,
-		table: 		"users",
+		sqlDB:    sqlDB,
+		userRepo: userRepo,
+		table:    "users",
 	}
 }
 
