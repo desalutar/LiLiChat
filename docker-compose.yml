@@ -1,0 +1,38 @@
+networks:
+  lilychat_network:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:16
+    container_name: lilychat_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lilychat
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - lilychat_network
+
+  app:
+    build: .
+    container_name: lilychat_app
+    depends_on:
+      - db
+    environment:
+      CONFIG_PATH: /app/config/config.yml
+      POSTGRES_DSN: postgres://postgres:password@db:5432/lilychat?sslmode=disable
+      SERVER_PORT: 9900
+      SHUTDOWN_TIMEOUT: 5s
+    ports:
+      - "9900:9900"
+    networks:
+      - lilychat_network
+    command: ["./lilychat"]
+
+volumes:
+  db_data:
