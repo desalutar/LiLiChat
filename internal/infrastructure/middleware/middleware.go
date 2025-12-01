@@ -28,7 +28,6 @@ func JWTMiddleware(jwtCfg *utils.JTW) func(next http.Handler) http.Handler {
 				}
 			}
 			
-			// Если токена нет в заголовке, проверяем query параметр (для WebSocket)
 			if tokenStr == "" {
 				tokenStr = r.URL.Query().Get("token")
 			}
