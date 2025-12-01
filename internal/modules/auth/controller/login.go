@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"lilyChat/internal/infrastructure/components"
-	dto "lilyChat/internal/infrastructure/domain/DTO"
+	dto "lilyChat/internal/infrastructure/domain/dto"
 	authService "lilyChat/internal/modules/auth/service"
 )
 
@@ -48,7 +48,7 @@ func (c *AuthController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, refreshToken, err := c.authService.LoginUser(req.Username, req.Password)
+	accessToken, refreshToken, userID, err := c.authService.LoginUser(req.Username, req.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -57,6 +57,7 @@ func (c *AuthController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	resp := dto.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		UserID:       userID,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

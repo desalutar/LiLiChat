@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+type ChatServicer interface {
+	SendMessage(senderID, receiverID int64, text string) error
+	GetHub() *hub.Hub
+}
+
 type ChatService struct {
 	msgRepo websocket.MessageRepository
 	hub     *hub.Hub
@@ -17,6 +22,10 @@ func NewChatService(msgRepo websocket.MessageRepository, hub *hub.Hub) *ChatServ
 		msgRepo: msgRepo,
 		hub:     hub,
 	}
+}
+
+func (s *ChatService) GetHub() *hub.Hub {
+	return s.hub
 }
 
 func (s *ChatService) SendMessage(senderID, receiverID int64, text string) error {

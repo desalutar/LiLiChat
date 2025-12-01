@@ -9,7 +9,7 @@ import (
 
 type AuthServicer interface {
 	RegisterUser(username, password string) error
-	LoginUser(username, password string) (accessToken string, refreshToken string, err error)
+	LoginUser(username, password string) (accessToken string, refreshToken string, userID int64, err error)
 }
 
 type AuthService struct {
@@ -37,25 +37,25 @@ func (s *AuthService) RegisterUser(username, password string) error {
 	return s.authRepo.RegisterUser(username, hash)
 }
 
-func (s *AuthService) LoginUser(username, password string) (accessToken string, refreshToken string, err error) {
+func (s *AuthService) LoginUser(username, password string) (accessToken string, refreshToken string, userID int64, err error) {
 	user, err := s.authRepo.GetUser(username)
 	if err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 
 	if err := utils.ComparePassword(user.PasswordHash, password); err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 
-	accessToken, err = utils.JWTokener.GenerateAccessToken(&s.JWT, username)
+	accessToken, err = utils.JWTokener.GenerateAccessToken(&s.JWT, username, user.ID)
 	if err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 
-	refreshToken, err = utils.JWTokener.GenerateRefreshToken(&s.JWT, username)
+	refreshToken, err = utils.JWTokener.GenerateRefreshToken(&s.JWT, username, user.ID)
 	if err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 
-	return accessToken, refreshToken, nil
+	return accessToken, refreshToken, user.ID, nil
 }

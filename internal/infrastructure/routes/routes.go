@@ -16,6 +16,8 @@ func NewApiRouter(controllers *modules.Controller, components *components.Compon
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/1", func(r chi.Router) {
 			authCheck := middleware.JWTMiddleware(&components.JWT)
+			
+			// Auth routes
 			r.Route("/auth", func(r chi.Router) {
 				authController := controllers.Auth
 				r.Post("/register", authController.RegisterHandler)
@@ -23,6 +25,12 @@ func NewApiRouter(controllers *modules.Controller, components *components.Compon
 				r.Route("/refresh", func(r chi.Router) {
 					r.Use(authCheck)
 				})
+			})
+
+			// WebSocket route (requires authentication)
+			r.Route("/ws", func(r chi.Router) {
+				r.Use(authCheck)
+				r.Get("/", controllers.Chat)
 			})
 		})
 	})

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiLiChat WebSocket Test Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            width: 200px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .sent {
+            background-color: #d4edda;
+            text-align: right;
+        }
+        .received {
+            background-color: #d1ecf1;
+        }
+        .system {
+            background-color: #fff3cd;
+            font-style: italic;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>LiLiChat WebSocket Test Client</h1>
+    
+    <div class="container">
+        <h3>1. Авторизация</h3>
+        <input type="text" id="username" placeholder="Username" value="user1">
+        <input type="password" id="password" placeholder="Password" value="123456">
+        <button onclick="login()">Login</button>
+        <div id="loginStatus"></div>
+    </div>
+
+    <div class="container">
+        <h3>2. WebSocket подключение</h3>
+        <button id="connectBtn" onclick="connectWS()" disabled>Подключиться к WebSocket</button>
+        <button id="disconnectBtn" onclick="disconnectWS()" disabled>Отключиться</button>
+        <div id="wsStatus"></div>
+    </div>
+
+    <div class="container">
+        <h3>3. Отправка сообщения</h3>
+        <input type="number" id="receiverId" placeholder="Receiver ID" value="2">
+        <input type="text" id="messageText" placeholder="Сообщение">
+        <button onclick="sendMessage()" id="sendBtn" disabled>Отправить</button>
+    </div>
+
+    <div class="container">
+        <h3>Сообщения:</h3>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let token = null;
+        let userId = null;
+
+        function addMessage(text, type = 'system') {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:9900/api/1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const data = await response.json();
+                token = data.access_token;
+                userId = data.user_id;
+
+                document.getElementById('loginStatus').innerHTML = 
+                    `<p style="color: green;">Успешно! User ID: ${userId}</p>`;
+                document.getElementById('connectBtn').disabled = false;
+                addMessage(`Авторизация успешна. User ID: ${userId}`, 'system');
+            } catch (error) {
+                document.getElementById('loginStatus').innerHTML = 
+                    `<p style="color: red;">Ошибка: ${error.message}</p>`;
+                addMessage(`Ошибка авторизации: ${error.message}`, 'error');
+            }
+        }
+
+        function connectWS() {
+            if (!token) {
+                addMessage('Сначала выполните авторизацию!', 'error');
+                return;
+            }
+
+            const wsUrl = `ws://localhost:9900/api/1/ws?token=${token}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function() {
+                addMessage('WebSocket подключен', 'system');
+                document.getElementById('wsStatus').innerHTML = 
+                    '<p style="color: green;">Подключено</p>';
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'connected') {
+                    addMessage(`Подключение установлено. Ваш ID: ${data.user_id}`, 'system');
+                } else if (data.type === 'message') {
+                    addMessage(`От ${data.sender_id}: ${data.text}`, 'received');
+                } else if (data.type === 'error') {
+                    addMessage(`Ошибка: ${data.error}`, 'error');
+                } else {
+                    addMessage(JSON.stringify(data), 'system');
+                }
+            };
+
+            ws.onerror = function(error) {
+                addMessage(`WebSocket ошибка: ${error}`, 'error');
+            };
+
+            ws.onclose = function() {
+                addMessage('WebSocket отключен', 'system');
+                document.getElementById('wsStatus').innerHTML = 
+                    '<p style="color: red;">Отключено</p>';
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+            };
+        }
+
+        function disconnectWS() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function sendMessage() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                addMessage('WebSocket не подключен!', 'error');
+                return;
+            }
+
+            const receiverId = parseInt(document.getElementById('receiverId').value);
+            const text = document.getElementById('messageText').value;
+
+            if (!text) {
+                addMessage('Введите сообщение!', 'error');
+                return;
+            }
+
+            const message = {
+                receiver_id: receiverId,
+                text: text
+            };
+
+            ws.send(JSON.stringify(message));
+            addMessage(`Вам → ${receiverId}: ${text}`, 'sent');
+            document.getElementById('messageText').value = '';
+        }
+    </script>
+</body>
+</html>
+

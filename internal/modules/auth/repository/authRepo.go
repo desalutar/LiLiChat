@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"lilyChat/internal/infrastructure/db"
-	dto "lilyChat/internal/infrastructure/domain/DTO"
+	dto "lilyChat/internal/infrastructure/domain/dto"
 	"time"
 )
 
