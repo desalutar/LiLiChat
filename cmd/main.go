@@ -10,6 +10,8 @@ import (
 
 	"lilyChat/internal/run"
 )
+
+//TODO: добавить диалог между двумя пользователями 
 func main() {
 	app := run.Run()
 

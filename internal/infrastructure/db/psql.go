@@ -7,6 +7,7 @@ import (
 	"lilyChat/internal/infrastructure/db/sqlutil"
 )
 
+//TODO: добавить работу с кешем 
 type PostgresRepo struct {
 	DB *sql.DB
 }
