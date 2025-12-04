@@ -25,9 +25,44 @@ func (r *PostgresRepo) Create(table string, record Record) error {
 }
 
 
+// func (r *PostgresRepo) Get(table string, filters map[string]interface{}) ([]Record, error) {
+// 	where, args := sqlutil.BuildWhereClause(filters)
+// 	query := fmt.Sprintf(queries.GetByFilters, table, where)
+
+// 	rows, err := r.DB.Query(query, args...)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+
+// 	var results []Record
+// 	cols, _ := rows.Columns()
+// 	for rows.Next() {
+// 		row := make([]interface{}, len(cols))
+// 		rowPtrs := make([]interface{}, len(cols))
+// 		for i := range row {
+//             rowPtrs[i] = &row[i]
+//         }
+// 		rows.Scan(rowPtrs...)
+
+// 		rec := make(Record)
+// 		for i, col := range cols {
+// 			rec[col] = row[i]
+// 		}
+// 		results = append(results, rec)
+// 	}
+// 	return results, nil
+// }
+
 func (r *PostgresRepo) Get(table string, filters map[string]interface{}) ([]Record, error) {
 	where, args := sqlutil.BuildWhereClause(filters)
-	query := fmt.Sprintf(queries.GetByFilters, table, where)
+
+	var query string
+	if where == "" {
+		query = fmt.Sprintf("SELECT * FROM %s", table)
+	} else {
+		query = fmt.Sprintf("SELECT * FROM %s WHERE %s", table, where)
+	}
 
 	rows, err := r.DB.Query(query, args...)
 	if err != nil {
@@ -41,8 +76,8 @@ func (r *PostgresRepo) Get(table string, filters map[string]interface{}) ([]Reco
 		row := make([]interface{}, len(cols))
 		rowPtrs := make([]interface{}, len(cols))
 		for i := range row {
-            rowPtrs[i] = &row[i]
-        }
+			rowPtrs[i] = &row[i]
+		}
 		rows.Scan(rowPtrs...)
 
 		rec := make(Record)
@@ -53,6 +88,7 @@ func (r *PostgresRepo) Get(table string, filters map[string]interface{}) ([]Reco
 	}
 	return results, nil
 }
+
 
 func (r *PostgresRepo) Update(table string, filters map[string]interface{}, updates Record) error {
 	where, whereArgs := sqlutil.BuildWhereClause(filters)
