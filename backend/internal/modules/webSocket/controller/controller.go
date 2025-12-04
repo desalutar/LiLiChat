@@ -44,26 +44,17 @@ func WSHandler(chatSvc service.ChatServicer) http.HandlerFunc {
 			"message": "WebSocket connection established",
 		})
 
-		// Читаем сообщения от клиента
 		for {
 			var req dto.SendMessageRequest
 			if err := conn.ReadJSON(&req); err != nil {
-				log.Printf("[WS] Error reading message from user %d: %v", userID, err)
 				break
 			}
 			
-			log.Printf("[WS] Received message from user %d to user %d: %s", userID, req.ReceiverID, req.Text)
-			
-			// Отправляем сообщение через сервис (сохраняет в БД и отправляет через WebSocket)
 			if err := chatSvc.SendMessage(userID, req.ReceiverID, req.Text); err != nil {
-				log.Printf("[WS] Error sending message: %v", err)
-				// Отправляем ошибку клиенту
 				conn.WriteJSON(map[string]interface{}{
 					"type":  "error",
 					"error": err.Error(),
 				})
-			} else {
-				log.Printf("[WS] Message processed successfully from user %d to user %d", userID, req.ReceiverID)
 			}
 		}
 	}

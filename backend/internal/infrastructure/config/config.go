@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -8,8 +9,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ChatConfig struct {
-	Port string `yaml:"port"`
+type DatabaseConfig struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"dbname"`
+	SSLMode  string `yaml:"sslmode"`
 }
 
 type JWTConfig struct {
@@ -21,14 +27,20 @@ type JWTConfig struct {
 }
 
 type ServerConfig struct {
-	Port            string        `yaml:"port"`
-	ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
+	Port                 string        `yaml:"port"`
+	ShutdownTimeout      time.Duration `yaml:"-"`
+	RawShutdownTimeout   string        `yaml:"shutdown_timeout"`
+}
+
+type FrontendConfig struct {
+	Port string `yaml:"port"`
 }
 
 type Config struct {
-	Chat   ChatConfig   `yaml:"chat"`
-	JWT    JWTConfig    `yaml:"jwt"`
-	Server ServerConfig `yaml:"server"`
+	Database DatabaseConfig `yaml:"database"`
+	JWT      JWTConfig      `yaml:"jwt"`
+	Server   ServerConfig   `yaml:"server"`
+	Frontend FrontendConfig `yaml:"frontend"`
 	PostgresDSN string `yaml:"-"`
 }
 
@@ -43,49 +55,33 @@ func LoadConfig(path string) *Config {
 		log.Fatalf("Failed to parse YAML config: %v", err)
 	}
 
-	// Парсим TTL токенов
 	accessTTL, err := time.ParseDuration(cfg.JWT.RawAccessTokenTTL)
 	if err != nil {
-		log.Printf("Invalid access_token_ttl, using default 15m")
 		accessTTL = 15 * time.Minute
 	}
 	cfg.JWT.AccessTokenTTL = accessTTL
 
 	refreshTTL, err := time.ParseDuration(cfg.JWT.RawRefreshTokenTTL)
 	if err != nil {
-		log.Printf("Invalid refresh_token_ttl, using default 24h")
 		refreshTTL = 24 * time.Hour
 	}
 	cfg.JWT.RefreshTokenTTL = refreshTTL
 
-	// Порт сервера
-	if envPort := os.Getenv("SERVER_PORT"); envPort != "" {
-		cfg.Server.Port = envPort
-	} else if cfg.Server.Port == "" {
-		cfg.Server.Port = cfg.Chat.Port
-	}
-
-	// Shutdown timeout
-	if envTimeout := os.Getenv("SHUTDOWN_TIMEOUT"); envTimeout != "" {
-		if t, err := time.ParseDuration(envTimeout); err == nil {
-			cfg.Server.ShutdownTimeout = t
-		} else {
-			log.Printf("Invalid SHUTDOWN_TIMEOUT, using default 5s")
-			cfg.Server.ShutdownTimeout = 5 * time.Second
-		}
-	} else if cfg.Server.ShutdownTimeout == 0 {
+	shutdownTimeout, err := time.ParseDuration(cfg.Server.RawShutdownTimeout)
+	if err != nil {
 		cfg.Server.ShutdownTimeout = 5 * time.Second
-	}
-
-	// DSN PostgreSQL
-	if dsn := os.Getenv("POSTGRES_DSN"); dsn != "" {
-		cfg.PostgresDSN = dsn
 	} else {
-		log.Fatal("POSTGRES_DSN env variable is required")
+		cfg.Server.ShutdownTimeout = shutdownTimeout
 	}
 
-	log.Printf("Config loaded: server_port=%s, access_token_ttl=%v, refresh_token_ttl=%v\n",
-		cfg.Server.Port, cfg.JWT.AccessTokenTTL, cfg.JWT.RefreshTokenTTL)
+	cfg.PostgresDSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		cfg.Database.User,
+		cfg.Database.Password,
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.DBName,
+		cfg.Database.SSLMode,
+	)
 
 	return &cfg
 }

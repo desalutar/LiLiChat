@@ -12,6 +12,8 @@ RUN go build -o lilychat ./cmd/main.go
 
 FROM alpine:latest
 
+RUN apk add --no-cache netcat-openbsd
+
 WORKDIR /app
 
 COPY --from=builder /app/lilychat .
@@ -19,9 +21,6 @@ COPY --from=builder /app/lilychat .
 COPY config ./config
 COPY --from=builder /app/internal ./internal
 
-ENV POSTGRES_DSN=postgres://postgres:password@db:5432/lilychat?sslmode=disable
-ENV SERVER_PORT=9900
-ENV SHUTDOWN_TIMEOUT=5s
 
 EXPOSE 9900
 
