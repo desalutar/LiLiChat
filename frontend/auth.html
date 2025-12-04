@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход / Регистрация</title>
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+<div class="container">
+    <h2 id="form-title">Вход</h2>
+    <form id="auth-form">
+        <input type="text" name="username" placeholder="Имя пользователя" autocomplete="username" required>
+        <input type="password" name="password" placeholder="Пароль" autocomplete="current-password" required>
+        <button type="submit" id="submit-button">Войти</button>
+    </form>
+    <p id="toggle-text">
+        Нет аккаунта? <a href="#" id="toggle-link">Зарегистрироваться</a>
+    </p>
+</div>
+<script src="/js/auth.js" defer></script>
+</body>
+</html>

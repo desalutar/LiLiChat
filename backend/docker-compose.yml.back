@@ -18,9 +18,8 @@ services:
     networks:
       - lilychat_network
 
-  backend:
-    build:
-      context: ./backend
+  app:
+    build: .
     container_name: lilychat_app
     depends_on:
       - db
@@ -29,21 +28,11 @@ services:
       POSTGRES_DSN: postgres://postgres:password@db:5432/lilychat?sslmode=disable
       SERVER_PORT: 9900
       SHUTDOWN_TIMEOUT: 5s
-    networks:
-      - lilychat_network
     ports:
       - "9900:9900"
-
-  frontend:
-    build:
-      context: ./frontend
-    container_name: lilychat_frontend
-    depends_on:
-      - backend
     networks:
       - lilychat_network
-    ports:
-      - "9090:80"
+    command: ["./lilychat"]
 
 volumes:
   db_data:

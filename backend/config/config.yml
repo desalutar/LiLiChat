@@ -1,0 +1,13 @@
+chat:
+  port: "5001" 
+
+jwt:
+  secret: "mysecretkey"
+  access_token_ttl: "5m"      
+  refresh_token_ttl: "1h"    
+
+server:
+  port: "9900"                
+  shutdown_timeout: "5s"      
+
+POSTGRES_DSN: postgres://postgres:password@db:5432/lilychat?sslmode=disable

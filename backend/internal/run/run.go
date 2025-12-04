@@ -41,7 +41,7 @@ func Run() *AppConf {
 	service := modules.NewServices(*repo, comps)
 	controller := modules.NewController(*service, comps)
 
-	router := routes.NewApiRouter(controller, comps)
+	router := routes.NewRouter(controller, comps)
 	httpSrv := &http.Server{
 		Addr:    ":" + cfg.Server.Port,
 		Handler: router,
