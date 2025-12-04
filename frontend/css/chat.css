@@ -54,6 +54,12 @@ body, html {
     color: white;
 }
 
+#user-list li.selected {
+    background-color: #0071e3;
+    color: white;
+    font-weight: 600;
+}
+
 .logout-btn {
     margin-top: 20px;
     padding: 10px;
