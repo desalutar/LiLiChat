@@ -1,4 +1,3 @@
-# Generate .env from config.yml before running docker-compose
 env:
 	python3 scripts/generate-env.py
 
