@@ -39,7 +39,7 @@ func (s *ChatService) SendMessage(senderID, receiverID int64, text string) error
 		return err
 	}
 
-	// Отправка через WebSocket
+	// Send via WebSocket
 	return s.hub.SendMessage(senderID, receiverID, text)
 }
 

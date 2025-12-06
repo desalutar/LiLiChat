@@ -1,8 +1,8 @@
-// Получаем текущий user_id из localStorage
+// Get current user_id from localStorage
 const currentUserId = localStorage.getItem('userId');
 const accessToken = localStorage.getItem('accessToken');
 
-// Проверка авторизации
+// Check authorization
 if (!currentUserId || !accessToken) {
     window.location.href = '/auth.html';
 }
@@ -20,16 +20,16 @@ const chatContainer = document.querySelector('.chat-container');
 const logoutBtn = document.getElementById('logout-btn');
 
 let isDragging = false;
-let ws = null; // WebSocket соединение
+let ws = null; // WebSocket connection
 
-// Загрузка списка пользователей
+// Load users list
 function loadUsers() {
     if (!accessToken) {
         console.error('No access token available');
         return;
     }
 
-    userList.innerHTML = '<li>Загрузка пользователей...</li>';
+    userList.innerHTML = '<li>Loading users...</li>';
 
     fetch('/api/1/users', {
         method: 'GET',
@@ -40,7 +40,7 @@ function loadUsers() {
     })
     .then(res => {
         if (res.status === 401) {
-            // Токен недействителен, перенаправляем на страницу входа
+            // Token invalid, redirect to login page
             localStorage.removeItem('accessToken');
             localStorage.removeItem('userId');
             window.location.href = '/auth.html';
@@ -54,20 +54,20 @@ function loadUsers() {
     .then(users => {
         if (!users || !Array.isArray(users)) {
             console.error('Invalid users data:', users);
-            userList.innerHTML = '<li>Ошибка загрузки пользователей</li>';
+            userList.innerHTML = '<li>Error loading users</li>';
             return;
         }
 
-        // Фильтруем текущего пользователя из списка
+        // Filter out current user from the list
         const currentUserIdNum = parseInt(currentUserId, 10);
         const otherUsers = users.filter(user => user.id !== currentUserIdNum);
 
         if (otherUsers.length === 0) {
-            userList.innerHTML = '<li>Нет других пользователей</li>';
+            userList.innerHTML = '<li>No other users</li>';
             return;
         }
 
-        // Очищаем список и добавляем пользователей
+        // Clear list and add users
         userList.innerHTML = '';
         otherUsers.forEach(user => {
             const li = document.createElement('li');
@@ -78,11 +78,11 @@ function loadUsers() {
     })
     .catch(error => {
         console.error('Error loading users:', error);
-        userList.innerHTML = '<li>Ошибка загрузки пользователей</li>';
+        userList.innerHTML = '<li>Error loading users</li>';
     });
 }
 
-// Обработчик выхода
+// Logout handler
 logoutBtn.addEventListener('click', () => {
     closeWebSocket();
     localStorage.removeItem('accessToken');
@@ -90,10 +90,10 @@ logoutBtn.addEventListener('click', () => {
     window.location.href = '/auth.html';
 });
 
-// Загружаем пользователей при загрузке страницы
+// Load users on page load
 loadUsers();
 
-// Закрытие WebSocket соединения
+// Close WebSocket connection
 function closeWebSocket() {
     if (ws) {
         ws.close();
@@ -102,9 +102,9 @@ function closeWebSocket() {
     }
 }
 
-// Подключение к WebSocket
+// Connect to WebSocket
 function connectWebSocket() {
-    // Закрываем предыдущее соединение, если есть
+    // Close previous connection if exists
     closeWebSocket();
 
     if (!accessToken) {
@@ -112,19 +112,19 @@ function connectWebSocket() {
         return;
     }
 
-    // Определяем протокол (ws или wss)
+    // Determine protocol (ws or wss)
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/api/1/ws`;
     
     console.log('Connecting to WebSocket:', wsUrl);
 
-    // Создаем WebSocket соединение с токеном в query параметре
-    // (middleware поддерживает токен в query параметре)
+    // Create WebSocket connection with token in query parameter
+    // (middleware supports token in query parameter)
     ws = new WebSocket(`${wsUrl}?token=${accessToken}`);
 
     ws.onopen = () => {
         console.log('WebSocket connection opened');
-        // Загружаем историю сообщений при подключении
+        // Load message history on connection
         loadMessages();
     };
 
@@ -136,7 +136,7 @@ function connectWebSocket() {
             if (data.type === 'connected') {
                 console.log('WebSocket connected, user_id:', data.user_id);
             } else if (data.type === 'message') {
-                // Получено новое сообщение
+                // New message received
                 const currentUserIdNum = parseInt(currentUserId, 10);
                 const senderId = typeof data.sender_id === 'number' ? data.sender_id : parseInt(data.sender_id, 10);
                 const receiverId = typeof data.receiver_id === 'number' ? data.receiver_id : parseInt(data.receiver_id, 10);
@@ -150,13 +150,13 @@ function connectWebSocket() {
                     text: data.text
                 });
                 
-                // Проверяем, что сообщение относится к текущему чату
-                // Сообщение может быть:
-                // 1. От нас к выбранному пользователю (sender_id == наш ID, receiver_id == выбранный)
-                // 2. От выбранного пользователя к нам (sender_id == выбранный, receiver_id == наш ID)
+                // Check if message belongs to current chat
+                // Message can be:
+                // 1. From us to selected user (sender_id == our ID, receiver_id == selected)
+                // 2. From selected user to us (sender_id == selected, receiver_id == our ID)
                 if ((senderId === currentUserIdNum && receiverId === selectedUserIdNum) ||
                     (senderId === selectedUserIdNum && receiverId === currentUserIdNum)) {
-                    // Добавляем сообщение в чат
+                    // Add message to chat
                     const isSent = senderId === currentUserIdNum;
                     console.log('Adding message to chat:', { text: data.text, isSent });
                     addMessageToChat(data.text, isSent);
@@ -165,7 +165,7 @@ function connectWebSocket() {
                 }
             } else if (data.type === 'error') {
                 console.error('WebSocket error:', data.error);
-                alert('Ошибка: ' + data.error);
+                alert('Error: ' + data.error);
             }
         } catch (error) {
             console.error('Error parsing WebSocket message:', error);
@@ -182,29 +182,29 @@ function connectWebSocket() {
     };
 }
 
-// Выбор пользователя
+// User selection
 userList.addEventListener('click', e => {
     if (e.target.tagName === 'LI') {
-        // Убираем выделение с предыдущего выбранного элемента
+        // Remove selection from previous selected element
         const prevSelected = userList.querySelector('.selected');
         if (prevSelected) {
             prevSelected.classList.remove('selected');
         }
         
-        // Выделяем текущий выбранный элемент
+        // Highlight current selected element
         e.target.classList.add('selected');
         
         selectedUserId = e.target.dataset.userid;
-        chatHeader.textContent = 'Чат с ' + e.target.textContent;
+        chatHeader.textContent = 'Chat with ' + e.target.textContent;
         messagesDiv.innerHTML = '';
         messageForm.style.display = 'flex';
         
-        // Подключаемся к WebSocket
+        // Connect to WebSocket
         connectWebSocket();
     }
 });
 
-// Добавление сообщения в чат
+// Add message to chat
 function addMessageToChat(text, isSent) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message');
@@ -214,7 +214,7 @@ function addMessageToChat(text, isSent) {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Отправка сообщения через WebSocket
+// Send message via WebSocket
 messageForm.addEventListener('submit', e => {
     e.preventDefault();
     if (!selectedUserId) return;
@@ -222,11 +222,11 @@ messageForm.addEventListener('submit', e => {
     if (!content) return;
 
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-        alert('WebSocket соединение не установлено. Попробуйте выбрать пользователя снова.');
+        alert('WebSocket connection not established. Please select a user again.');
         return;
     }
 
-    // Отправляем сообщение через WebSocket
+    // Send message via WebSocket
     const message = {
         receiver_id: parseInt(selectedUserId, 10),
         text: content
@@ -234,16 +234,16 @@ messageForm.addEventListener('submit', e => {
 
     try {
         ws.send(JSON.stringify(message));
-        // Очищаем поле ввода сразу после отправки
+        // Clear input field after sending
         messageInput.value = '';
-        // Сообщение придет от сервера через WebSocket и отобразится автоматически
+        // Message will come from server via WebSocket and display automatically
     } catch (error) {
         console.error('Error sending message via WebSocket:', error);
-        alert('Ошибка отправки сообщения: ' + error.message);
+        alert('Error sending message: ' + error.message);
     }
 });
 
-// Загрузка сообщений
+// Load messages
 function loadMessages() {
     if (!selectedUserId) return;
 
@@ -261,7 +261,7 @@ function loadMessages() {
             return;
         }
         if (res.status === 404) {
-            // Endpoint не существует, просто не загружаем историю
+            // Endpoint doesn't exist, just skip history load
             console.log('Messages endpoint not found, skipping history load');
             return [];
         }
@@ -280,7 +280,7 @@ function loadMessages() {
         messagesDiv.innerHTML = '';
         if (data.length === 0) {
             const emptyMsg = document.createElement('div');
-            emptyMsg.textContent = 'Нет сообщений. Начните общение!';
+            emptyMsg.textContent = 'No messages. Start a conversation!';
             emptyMsg.style.color = '#888';
             emptyMsg.style.textAlign = 'center';
             emptyMsg.style.padding = '20px';
@@ -294,7 +294,7 @@ function loadMessages() {
             msgDiv.classList.add('message');
             const senderId = typeof msg.sender_id === 'number' ? msg.sender_id : parseInt(msg.sender_id, 10);
             msgDiv.classList.add(senderId === currentUserIdNum ? 'sent' : 'received');
-            // Используем text или content в зависимости от того, что приходит от сервера
+            // Use text or content depending on what comes from server
             msgDiv.textContent = msg.text || msg.content || '';
             messagesDiv.appendChild(msgDiv);
         });
@@ -305,9 +305,9 @@ function loadMessages() {
     });
 }
 
-// Автообновление сообщений больше не нужно - используем WebSocket
+// Auto-update messages no longer needed - using WebSocket
 
-// Изменение ширины боковой панели
+// Sidebar width adjustment
 dragbar.addEventListener('mousedown', () => {
     isDragging = true;
     document.body.style.cursor = 'ew-resize';
@@ -335,7 +335,7 @@ document.addEventListener('mousemove', e => {
     sidebar.style.width = pointerRelativeXpos + 'px';
 });
 
-// Закрываем WebSocket при закрытии страницы
+// Close WebSocket on page unload
 window.addEventListener('beforeunload', () => {
     closeWebSocket();
 });

@@ -1,12 +1,12 @@
 FROM nginx:alpine
 
-# Удаляем стандартные файлы nginx
+# Remove default nginx files
 RUN rm -rf /usr/share/nginx/html/*
 
-# Копируем фронтенд
+# Copy frontend
 COPY . /usr/share/nginx/html
 
-# Копируем кастомный конфиг nginx
+# Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

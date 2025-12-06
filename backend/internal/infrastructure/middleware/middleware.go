@@ -19,7 +19,7 @@ func JWTMiddleware(jwtCfg *utils.JTW) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var tokenStr string
 			
-			// Проверяем заголовок Authorization
+			// Check Authorization header
 			authHeader := r.Header.Get("Authorization")
 			if authHeader != "" {
 				parts := strings.SplitN(authHeader, " ", 2)

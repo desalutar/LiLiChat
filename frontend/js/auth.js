@@ -1,4 +1,4 @@
-let isLogin = true; // флаг, что сейчас логин
+let isLogin = true; // flag indicating login mode
 
 const form = document.getElementById('auth-form');
 const title = document.getElementById('form-title');
@@ -10,15 +10,15 @@ toggleLink.addEventListener('click', e => {
     e.preventDefault();
     isLogin = !isLogin;
     if (isLogin) {
-        title.textContent = 'Вход';
-        submitButton.textContent = 'Войти';
-        toggleText.firstChild.textContent = 'Нет аккаунта? ';
-        toggleLink.textContent = 'Зарегистрироваться';
+        title.textContent = 'Login';
+        submitButton.textContent = 'Login';
+        toggleText.firstChild.textContent = "Don't have an account? ";
+        toggleLink.textContent = 'Register';
     } else {
-        title.textContent = 'Регистрация';
-        submitButton.textContent = 'Зарегистрироваться';
-        toggleText.firstChild.textContent = 'Уже есть аккаунт? ';
-        toggleLink.textContent = 'Войти';
+        title.textContent = 'Register';
+        submitButton.textContent = 'Register';
+        toggleText.firstChild.textContent = 'Already have an account? ';
+        toggleLink.textContent = 'Login';
     }
 });
 
@@ -28,7 +28,7 @@ form.addEventListener('submit', async e => {
     const password = form.password.value.trim();
 
     if (!username || !password) {
-        alert('Заполните все поля');
+        alert('Please fill in all fields');
         return;
     }
 
@@ -53,7 +53,7 @@ form.addEventListener('submit', async e => {
                 data = JSON.parse(responseText);
             } catch (err) {
                 console.error('JSON parse error:', err, 'Response was:', responseText);
-                alert('Ошибка: неверный формат ответа от сервера');
+                alert('Error: invalid server response format');
                 return;
             }
             
@@ -64,7 +64,7 @@ form.addEventListener('submit', async e => {
             
             if (isLogin) {
                 if (data?.access_token) {
-                    // Сохраняем токен и переходим на чат
+                    // Save token and redirect to chat
                     localStorage.setItem('accessToken', data.access_token);
                     localStorage.setItem('userId', String(data.user_id));
                     console.log('Token saved:', {
@@ -73,7 +73,7 @@ form.addEventListener('submit', async e => {
                     });
                     console.log('About to redirect to /chat.html');
                     
-                    // Пробуем несколько способов редиректа
+                    // Try different redirect methods
                     try {
                         window.location.replace('/chat.html');
                     } catch (e) {
@@ -82,27 +82,27 @@ form.addEventListener('submit', async e => {
                     }
                 } else {
                     console.error('Login response missing access_token:', data);
-                    alert('Ошибка: сервер не вернул токен доступа');
+                    alert('Error: server did not return access token');
                 }
             } else if (!isLogin) {
-                alert('Регистрация прошла успешно! Теперь можно войти.');
-                // Переключаем форму обратно на вход
+                alert('Registration successful! You can now login.');
+                // Switch form back to login
                 isLogin = true;
-                title.textContent = 'Вход';
-                submitButton.textContent = 'Войти';
-                toggleText.firstChild.textContent = 'Нет аккаунта? ';
-                toggleLink.textContent = 'Зарегистрироваться';
+                title.textContent = 'Login';
+                submitButton.textContent = 'Login';
+                toggleText.firstChild.textContent = "Don't have an account? ";
+                toggleLink.textContent = 'Register';
             } else {
                 console.error('Unexpected response format:', data);
-                alert('Неожиданный формат ответа от сервера');
+                alert('Unexpected server response format');
             }
         } else {
             const errorText = await res.text().catch(() => 'Unknown error');
             console.error('Error response:', errorText);
-            alert('Ошибка: ' + errorText);
+            alert('Error: ' + errorText);
         }
     } catch (error) {
         console.error('Fetch error:', error);
-        alert('Ошибка сети: ' + error.message);
+        alert('Network error: ' + error.message);
     }
 });

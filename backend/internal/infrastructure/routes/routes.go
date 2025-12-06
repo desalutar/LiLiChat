@@ -25,7 +25,7 @@ func NewApiRouter(controllers *modules.Controller, components *components.Compon
 			})
 		})
 
-		// Users routes (требуется аутентификация)
+		// Users routes (authentication required)
 		r.Route("/users", func(r chi.Router) {
 			r.Use(authCheck)
 			// usersController := controllers.Users
@@ -49,11 +49,11 @@ func NewRouter(controllers *modules.Controller, components *components.Component
 	// --- API ---
 	r.Mount("/api", NewApiRouter(controllers, components))
 
-	// --- Статика фронтенда ---
+	// --- Frontend static files ---
 	fs := http.FileServer(http.Dir("frontend"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-	// --- Страницы ---
+	// --- Pages ---
 	r.Get("/auth.html", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "frontend/auth.html")
 	})
