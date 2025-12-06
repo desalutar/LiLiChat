@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"errors"
-	dto "lilyChat/internal/infrastructure/domain/dto"
+	dto "lilyChat/internal/modules/dto"
 	"sync"
 )
 

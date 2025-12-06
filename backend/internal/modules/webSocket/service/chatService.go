@@ -1,7 +1,7 @@
 package service
 
 import (
-	dto "lilyChat/internal/infrastructure/domain/dto"
+	dto "lilyChat/internal/modules/dto"
 	websocket "lilyChat/internal/modules/webSocket"
 	"lilyChat/internal/modules/webSocket/hub"
 	"time"

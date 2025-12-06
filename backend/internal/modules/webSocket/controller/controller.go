@@ -1,10 +1,9 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
-	dto "lilyChat/internal/infrastructure/domain/dto"
+	dto "lilyChat/internal/modules/dto"
 	"lilyChat/internal/infrastructure/middleware"
 	"lilyChat/internal/modules/webSocket/service"
 

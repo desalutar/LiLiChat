@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"lilyChat/internal/infrastructure/components"
-	dto "lilyChat/internal/infrastructure/domain/dto"
+	dto "lilyChat/internal/modules/dto"
 	authService "lilyChat/internal/modules/auth/service"
 )
 
@@ -37,8 +37,7 @@ func (c *AuthController) RegisterHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("registration successful"))
+	json.NewEncoder(w).Encode(dto.Response{Message: "registration successful"})
 }
 
 func (c *AuthController) LoginHandler(w http.ResponseWriter, r *http.Request) {

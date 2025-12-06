@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"lilyChat/internal/infrastructure/db"
-	"lilyChat/internal/infrastructure/domain/dto"
+	dto "lilyChat/internal/modules/dto"
 )
 
 type UsersRepositorier interface {

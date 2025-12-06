@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"lilyChat/internal/infrastructure/components"
-	dto "lilyChat/internal/infrastructure/domain/dto"
+	dto "lilyChat/internal/modules/dto"
 	usersRepo "lilyChat/internal/modules/users/repository"
 )
 
