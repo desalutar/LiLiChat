@@ -29,8 +29,10 @@ func NewApiRouter(controllers *modules.Controller, components *components.Compon
 		r.Route("/users", func(r chi.Router) {
 			r.Use(authCheck)
 			// usersController := controllers.Users
-			r.Get("/", controllers.Users.GetAllUsers) // GET /api/1/users
-			r.Get("/{username}", controllers.Users.GetUserByUsername) // GET /api/1/users/{username}
+			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+    			http.Error(w, "Use /users/{username} to search users", http.StatusForbidden)
+			})	
+			r.Get("/{username}", controllers.Users.GetUserByUsername)
 		})
 
 		// WebSocket route
