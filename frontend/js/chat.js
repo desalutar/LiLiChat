@@ -9,7 +9,8 @@ if (!currentUserId || !accessToken) {
 
 let selectedUserId = null;
 
-const userList = document.getElementById("user-list");
+const userList = document.getElementById('user-list');
+const userSearch = document.getElementById('user-search');
 const messagesDiv = document.getElementById("messages");
 const chatHeader = document.getElementById("chat-header");
 const messageForm = document.getElementById("message-form");
@@ -22,65 +23,6 @@ const logoutBtn = document.getElementById("logout-btn");
 let isDragging = false;
 let ws = null; // WebSocket connection
 
-// Load users list
-function loadUsers() {
-  if (!accessToken) {
-    console.error("No access token available");
-    return;
-  }
-
-  userList.innerHTML = "<li>Loading users...</li>";
-
-  fetch("/api/1/users", {
-    method: "GET",
-    headers: {
-      Authorization: "Bearer " + accessToken,
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => {
-      if (res.status === 401) {
-        // Token invalid, redirect to login page
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("userId");
-        window.location.href = "/auth.html";
-        return;
-      }
-      if (!res.ok) {
-        throw new Error("Failed to load users: " + res.statusText);
-      }
-      return res.json();
-    })
-    .then((users) => {
-      if (!users || !Array.isArray(users)) {
-        console.error("Invalid users data:", users);
-        userList.innerHTML = "<li>Error loading users</li>";
-        return;
-      }
-
-      // Filter out current user from the list
-      const currentUserIdNum = parseInt(currentUserId, 10);
-      const otherUsers = users.filter((user) => user.id !== currentUserIdNum);
-
-      if (otherUsers.length === 0) {
-        userList.innerHTML = "<li>No other users</li>";
-        return;
-      }
-
-      // Clear list and add users
-      userList.innerHTML = "";
-      otherUsers.forEach((user) => {
-        const li = document.createElement("li");
-        li.textContent = user.username;
-        li.dataset.userid = user.id;
-        userList.appendChild(li);
-      });
-    })
-    .catch((error) => {
-      console.error("Error loading users:", error);
-      userList.innerHTML = "<li>Error loading users</li>";
-    });
-}
 
 // Logout handler
 logoutBtn.addEventListener("click", () => {
@@ -90,8 +32,6 @@ logoutBtn.addEventListener("click", () => {
   window.location.href = "/auth.html";
 });
 
-// Load users on page load
-loadUsers();
 
 // Close WebSocket connection
 function closeWebSocket() {
@@ -211,6 +151,44 @@ userList.addEventListener("click", (e) => {
     connectWebSocket();
   }
 });
+
+// User Search
+userSearch.addEventListener('input', () => {
+  const query = userSearch.value.trim();
+  userList.innerHTML = ''
+
+  if (!query) return
+
+  fetch(`/api/1/users/${encodeURIComponent(query)}`, {
+    headers: {
+      'Authorization': 'Bearer ' + accessToken,
+      'Content-Type': 'application/json'
+    }
+  })
+    .then(res => {
+      if (res.status === 404) return null 
+      if (!res.ok) throw new Error('Failed to search user');
+      return res.json()
+    })
+    .then(user => {
+      if (!user) return
+      
+      const li = document.createElement('li')
+      li.textContent = user.username
+      li.dataset.userid = user.id
+      li.addEventListener('click', () => {
+        selectedUserId = user.id
+        chatHeader.textContent = 'Chat with' + user.username
+        messagesDiv.innerHTML = ''
+        messageForm.style.display = 'flex'
+        connectWebSocket()
+      })
+      userList.appendChild(li)
+    })
+    .catch(err => {
+      console.error('Error searching user:', err);
+  })
+})
 
 // Add message to chat
 function addMessageToChat(text, isSent) {

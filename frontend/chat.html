@@ -8,10 +8,15 @@
   <body>
     <div class="chat-container">
       <div class="sidebar" id="sidebar">
-        <h3>Users</h3>
-        <ul id="user-list">
-          <!-- User list will be loaded via JS -->
-        </ul>
+        <h3 class="sidebar-title">Users</h3>
+        <input
+          type="text"
+          id="user-search"
+          placeholder="Search users..."
+          class="search-input"
+        />
+        <ul id="user-list"></ul>
+        
         <button id="logout-btn" class="logout-btn">Logout</button>
       </div>
       <div id="dragbar"></div>
