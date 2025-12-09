@@ -25,15 +25,6 @@ function showMessage(text, type = "error") {
   box.style.marginTop = "10px";
 }
 
-toggleSearchBtn.addEventListener("click", () => {
-  const isVisible = searchInput.style.display === "block";
-  searchInput.style.display = isVisible ? "none" : "block";
-  userList.style.display = isVisible ? "none" : "block";
-
-  if (!isVisible) searchInput.focus();
-});
-
-
 toggleLink.addEventListener("click", (e) => {
   e.preventDefault();
   isLogin = !isLogin;
