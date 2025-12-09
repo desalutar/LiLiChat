@@ -1,10 +1,30 @@
-let isLogin = true; // flag indicating login mode
+let isLogin = true;
 
 const form = document.getElementById('auth-form');
 const title = document.getElementById('form-title');
 const submitButton = document.getElementById('submit-button');
 const toggleLink = document.getElementById('toggle-link');
 const toggleText = document.getElementById('toggle-text');
+
+function showMessage(text, type = 'error') {
+    const box = document.getElementById('message-box');
+    box.style.display = 'block';
+
+    box.textContent = text;
+
+    if (type === 'error') {
+        box.style.color = '#fff';
+        box.style.background = '#d9534f';
+    } else if (type === 'success') {
+        box.style.color = '#fff';
+        box.style.background = '#5cb85c';
+    }
+
+    box.style.padding = '10px';
+    box.style.borderRadius = '5px';
+    box.style.marginTop = '10px';
+}
+
 
 toggleLink.addEventListener('click', e => {
     e.preventDefault();
@@ -28,7 +48,7 @@ form.addEventListener('submit', async e => {
     const password = form.password.value.trim();
 
     if (!username || !password) {
-        alert('Please fill in all fields');
+        showMessage('Please fill in all fields');
         return;
     }
 
@@ -53,7 +73,7 @@ form.addEventListener('submit', async e => {
                 data = JSON.parse(responseText);
             } catch (err) {
                 console.error('JSON parse error:', err, 'Response was:', responseText);
-                alert('Error: invalid server response format');
+                showMessage('Error: invalid server response format');
                 return;
             }
             
@@ -82,10 +102,10 @@ form.addEventListener('submit', async e => {
                     }
                 } else {
                     console.error('Login response missing access_token:', data);
-                    alert('Error: server did not return access token');
+                    showMessage('Error: server did not return access token');
                 }
             } else if (!isLogin) {
-                alert('Registration successful! You can now login.');
+                showMessage('Registration successful! You can now login.');
                 // Switch form back to login
                 isLogin = true;
                 title.textContent = 'Login';
@@ -94,15 +114,15 @@ form.addEventListener('submit', async e => {
                 toggleLink.textContent = 'Register';
             } else {
                 console.error('Unexpected response format:', data);
-                alert('Unexpected server response format');
+                showMessage('Unexpected server response format');
             }
         } else {
             const errorText = await res.text().catch(() => 'Unknown error');
             console.error('Error response:', errorText);
-            alert('Error: ' + errorText);
+            showMessage('Error: ' + errorText);
         }
     } catch (error) {
         console.error('Fetch error:', error);
-        alert('Network error: ' + error.message);
+        showMessage('Network error: ' + error.message);
     }
 });
