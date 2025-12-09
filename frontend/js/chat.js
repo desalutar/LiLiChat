@@ -9,16 +9,17 @@ if (!currentUserId || !accessToken) {
 
 let selectedUserId = null;
 
-const userList = document.getElementById('user-list');
-const userSearch = document.getElementById('user-search');
-const messagesDiv = document.getElementById("messages");
 const chatHeader = document.getElementById("chat-header");
+const chatContainer = document.querySelector(".chat-container");
+const dragbar = document.getElementById("dragbar");
 const messageForm = document.getElementById("message-form");
 const messageInput = document.getElementById("message-input");
-const dragbar = document.getElementById("dragbar");
-const sidebar = document.getElementById("sidebar");
-const chatContainer = document.querySelector(".chat-container");
+const messagesDiv = document.getElementById("messages");
 const logoutBtn = document.getElementById("logout-btn");
+const sidebar = document.getElementById("sidebar");
+const userList = document.getElementById('user-list');
+const userSearch = document.getElementById('user-search');
+const toggleSidebarBtn = document.getElementById("toggle-sidebar");
 
 let isDragging = false;
 let ws = null; // WebSocket connection
@@ -296,7 +297,24 @@ function loadMessages() {
     });
 }
 
-// Auto-update messages no longer needed - using WebSocket
+// Toggle sidebar visibility and hide/show the button when clicked
+toggleSidebarBtn.addEventListener("click", () => {
+  sidebar.classList.toggle("show");
+
+  if (sidebar.classList.contains("show")) {
+    toggleSidebarBtn.style.display = "none";
+  } else {
+    toggleSidebarBtn.style.display = "block";
+  }
+});
+
+// Close sidebar and show the toggle button when clicking outside
+document.addEventListener("click", (e) => {
+  if (!sidebar.contains(e.target) && !toggleSidebarBtn.contains(e.target) && sidebar.classList.contains("show")) {
+    sidebar.classList.remove("show");
+    toggleSidebarBtn.style.display = "block";
+  }
+});
 
 // Sidebar width adjustment
 dragbar.addEventListener("mousedown", () => {
