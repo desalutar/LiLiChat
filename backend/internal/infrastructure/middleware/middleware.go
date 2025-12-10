@@ -19,12 +19,18 @@ func JWTMiddleware(jwtCfg *utils.JTW) func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var tokenStr string
 			
-			// Check Authorization header
-			authHeader := r.Header.Get("Authorization")
-			if authHeader != "" {
-				parts := strings.SplitN(authHeader, " ", 2)
-				if len(parts) == 2 && parts[0] == "Bearer" {
-					tokenStr = parts[1]
+			cookie, err := r.Cookie("access_token")
+			if err == nil && cookie != nil {
+				tokenStr = cookie.Value
+			}
+			
+			if tokenStr == "" {
+				authHeader := r.Header.Get("Authorization")
+				if authHeader != "" {
+					parts := strings.SplitN(authHeader, " ", 2)
+					if len(parts) == 2 && parts[0] == "Bearer" {
+						tokenStr = parts[1]
+					}
 				}
 			}
 			

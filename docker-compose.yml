@@ -52,6 +52,8 @@ services:
       - lilychat_network
     ports:
       - "1337:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
 
 volumes:
   db_data:

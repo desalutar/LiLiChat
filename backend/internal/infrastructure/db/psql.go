@@ -7,7 +7,6 @@ import (
 	"lilyChat/internal/infrastructure/db/sqlutil"
 )
 
-//TODO: add cache support 
 type PostgresRepo struct {
 	DB *sql.DB
 }

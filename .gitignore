@@ -1,3 +1,7 @@
+# ============================================
+# Backend - Secrets and Config
+# ============================================
+
 # Config file with secrets - keep your actual secrets here locally
 backend/config/config.yml
 
@@ -7,3 +11,93 @@ backend/config/config.yml
 .env.*.local
 *.env
 !*.env.example
+
+# ============================================
+# Frontend - Dependencies and Build
+# ============================================
+
+# Node.js dependencies
+frontend/node_modules/
+node_modules/
+
+# Compiled JavaScript (generated from TypeScript)
+# These files are auto-generated from src/**/*.ts
+frontend/public/js/
+frontend/dist/
+
+# Build outputs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Package manager files (optional - можно закоммитить для консистентности)
+# frontend/package-lock.json
+
+# ============================================
+# IDE and Editor files
+# ============================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA / WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+\#*\#
+.\#*
+
+# ============================================
+# OS files
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+
+# ============================================
+# Docker
+# ============================================
+
+# Docker volumes (if any)
+*.volume
+
+# ============================================
+# Temporary files
+# ============================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+.cache/

@@ -55,7 +55,6 @@ func LoadConfig(path string) *Config {
 		log.Fatalf("Failed to parse YAML config: %v", err)
 	}
 
-	// Validate required secrets
 	if cfg.Database.Password == "" {
 		log.Fatal("Database password is required in config.yml")
 	}
@@ -82,7 +81,6 @@ func LoadConfig(path string) *Config {
 		cfg.Server.ShutdownTimeout = shutdownTimeout
 	}
 
-	// Build DSN from config
 	cfg.PostgresDSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		cfg.Database.User,
 		cfg.Database.Password,

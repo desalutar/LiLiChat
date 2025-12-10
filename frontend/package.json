@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "copy:html": "cp auth.html chat.html public/",
+    "copy:css": "cp -r css public/",
+    "setup": "npm run copy:html && npm run copy:css"
+  }
+}

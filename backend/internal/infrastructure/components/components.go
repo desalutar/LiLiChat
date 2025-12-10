@@ -11,7 +11,7 @@ type Components struct {
 	JWT         utils.JTW
 	WSHub       *hub.Hub
 }
-//TODO: add logging and error handling
+
 func NewComponents(cfg config.Config, jwt utils.JTW) *Components {
 	return &Components{
 		Conf:        cfg,

@@ -24,7 +24,6 @@ func NewUsersController(service service.UsersServicer, components *components.Co
 	}
 }
 
-// GET /api/1/users
 func (c *UsersControllers) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := c.usersService.GetAllUsers(r.Context())
 	if err != nil {
@@ -36,7 +35,6 @@ func (c *UsersControllers) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-// GET /api/1/users/{username}
 func (c *UsersControllers) GetUserByUsername(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
 

@@ -135,6 +135,11 @@ html {
   text-align: center;
   border-radius: 8px;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 16px;
+  transition: background 0.3s ease;
 }
 
 .logout-btn:hover {
@@ -280,21 +285,43 @@ html {
     z-index: 1000;
   }
 
-  .sidebar.show { left: 0; }
+  .sidebar.show { 
+    left: 0; 
+  }
 
   .sidebar.show ~ .toggle-sidebar-btn,
-  .sidebar.show + .toggle-sidebar-btn { display: none; }
+  .sidebar.show + .toggle-sidebar-btn { 
+    display: none; 
+  }
 
-  #dragbar { display: none; }
+  #dragbar { 
+    display: none; 
+  }
 
-  #message-input { font-size: 15px; padding: 10px 50px 10px 15px; }
+  #message-input { 
+    font-size: 15px; 
+    padding: 10px 50px 10px 15px; 
+  }
 
-  #send-button { width: 32px; height: 32px; }
+  #send-button { 
+    width: 32px; 
+    height: 32px; 
+  }
 
-  #chat-header { font-size: 20px; }
-  .message { max-width: 75%; font-size: 15px; padding: 8px 12px; }
+  #chat-header { 
+    font-size: 20px; 
+  }
+  
+  .message { 
+    max-width: 75%; 
+    font-size: 15px; 
+    padding: 8px 12px; 
+  }
 }
 
 @media (max-width: 500px) {
-  .sidebar { width: 80%; }
+  .sidebar { 
+    width: 80%; 
+  }
 }
+

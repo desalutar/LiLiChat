@@ -23,3 +23,7 @@ type TokenResponse struct {
 	RefreshToken string `json:"refresh_token"`
 	UserID       int64  `json:"user_id"`
 }
+
+type LoginResponse struct {
+	UserID int64 `json:"user_id"`
+}
