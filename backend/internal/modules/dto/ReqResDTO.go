@@ -13,11 +13,6 @@ type RegisterRequest struct {
 	Password string `json:"password"`
 }
 
-type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -26,4 +21,9 @@ type TokenResponse struct {
 
 type LoginResponse struct {
 	UserID int64 `json:"user_id"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
