@@ -10,12 +10,14 @@ type Components struct {
 	Conf        config.Config
 	JWT         utils.JTW
 	WSHub       *hub.Hub
+	Logger 		utils.Logger
 }
 
-func NewComponents(cfg config.Config, jwt utils.JTW) *Components {
+func NewComponents(cfg config.Config, jwt utils.JTW, log utils.Logger) *Components {
 	return &Components{
 		Conf:        cfg,
 		JWT:         jwt,
 		WSHub:       hub.NewHub(),
+		Logger: 	 log,
 	}
 }

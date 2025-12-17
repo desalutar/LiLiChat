@@ -26,7 +26,6 @@ func (s *HttpServer) Serve(ctx context.Context) error {
 
 	chErr := make(chan error)
 	go func() {
-		log.Printf("server started: %s", s.conf.Port)
 		if err = s.srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatal("http listen and serve error", err)
 			chErr <- err

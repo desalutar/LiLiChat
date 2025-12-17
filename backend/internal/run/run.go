@@ -26,13 +26,15 @@ type AppConf struct {
 func Run() *AppConf {
 	cfg := config.LoadConfig("config/config.yml")
 
+	log := utils.NewLogger(&log.Logger{})	
+
 	jwtCfg := &utils.JTW{
 		Secret:          cfg.JWT.Secret,
 		AccessTokenTTL:  cfg.JWT.AccessTokenTTL,
 		RefreshTokenTTL: cfg.JWT.RefreshTokenTTL,
 	}
 
-	comps := components.NewComponents(*cfg, *jwtCfg)
+	comps := components.NewComponents(*cfg, *jwtCfg, log)
 
 	sqlDB := db.InitDB(cfg.PostgresDSN)
 	pgRepo := db.NewPostgresRepo(sqlDB)
