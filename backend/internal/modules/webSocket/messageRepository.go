@@ -15,17 +15,23 @@ type MessageRepository interface {
 type InMemoryMessageRepo struct {
 	messages []*dto.Message
 	mu       sync.Mutex
+	nextID   int64
 }
 
 func NewInMemoryMessageRepo() *InMemoryMessageRepo {
 	return &InMemoryMessageRepo{
 		messages: make([]*dto.Message, 0),
+		nextID:   1,
 	}
 }
 
 func (r *InMemoryMessageRepo) Save(msg *dto.Message) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if msg.ID == 0 {
+		msg.ID = r.nextID
+		r.nextID++
+	}
 	r.messages = append(r.messages, msg)
 	return nil
 }

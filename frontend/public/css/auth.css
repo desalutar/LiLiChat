@@ -90,9 +90,6 @@ a:hover {
   color: #e0e0e0;
 }
 
-/* === Адаптивные стили === */
-
-/* Планшеты (до 768px) */
 @media (max-width: 768px) {
   .container {
     max-width: 90%;
@@ -109,7 +106,7 @@ a:hover {
   input[type="text"],
   input[type="password"] {
     padding: 14px 15px;
-    font-size: 16px; /* Предотвращает зум на iOS */
+    font-size: 16px;
     margin: 8px 0;
   }
 
@@ -130,7 +127,6 @@ a:hover {
   }
 }
 
-/* Мобильные устройства (до 480px) */
 @media (max-width: 480px) {
   body {
     padding: 10px;
@@ -152,7 +148,7 @@ a:hover {
   input[type="text"],
   input[type="password"] {
     padding: 12px 15px;
-    font-size: 16px; /* Предотвращает зум на iOS */
+    font-size: 16px;
     margin: 10px 0;
     border-radius: 6px;
   }
@@ -182,7 +178,6 @@ a:hover {
   }
 }
 
-/* Очень маленькие экраны (до 360px) */
 @media (max-width: 360px) {
   .container {
     padding: 15px 12px;
@@ -211,7 +206,6 @@ a:hover {
   }
 }
 
-/* Ландшафтная ориентация на мобильных */
 @media (max-width: 768px) and (orientation: landscape) {
   .container {
     margin: 20px auto;
@@ -236,15 +230,14 @@ a:hover {
   }
 }
 
-/* Улучшения для touch-устройств */
 @media (hover: none) and (pointer: coarse) {
   button {
-    min-height: 44px; /* Минимальный размер для удобного нажатия */
+    min-height: 44px;
   }
 
   input[type="text"],
   input[type="password"] {
-    min-height: 44px; /* Минимальный размер для удобного ввода */
+    min-height: 44px;
   }
 
   a {

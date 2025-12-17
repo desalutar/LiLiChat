@@ -50,7 +50,6 @@ export class ApiClient {
                 }
                 result = JSON.parse(text)
             } catch (parseError) {
-                console.error("Failed to parse JSON response:", parseError)
                 return {
                     error: "Invalid JSON response from server",
                     status: response.status,

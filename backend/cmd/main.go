@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,9 +22,7 @@ func main() {
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
 	<-sigCh
-	log.Println("Shutting down...")
 
 	cancel()
 	time.Sleep(1 * time.Second)
-	log.Println("Server stopped gracefully")
 }

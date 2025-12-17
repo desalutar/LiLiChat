@@ -14,9 +14,11 @@ export interface User {
 export interface WebSocketMessage {
   type: "connected" | "message" | "error";
   user_id?: number;
+  id?: number;
   sender_id?: number;
   receiver_id?: number;
   text?: string;
+  created_at?: number;
   error?: string;
 }
 

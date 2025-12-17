@@ -111,9 +111,7 @@ export class AuthController {
 
     private async handleLogin(credentials: LoginCredentials): Promise<void> {
         const success = await this.authService.login(credentials)
-        console.log("Login result:", success)
         if (success) {
-            console.log("Redirecting to chat page...")
             window.location.href = "/public/chat.html"
         } else {
             throw new Error("Login failed")

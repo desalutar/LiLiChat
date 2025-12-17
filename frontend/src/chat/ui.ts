@@ -5,6 +5,7 @@ export class ChatController {
   private chatService: ChatService
   private selectedUserId: number | null = null
   private isDragging: boolean = false
+  private displayedMessages: Set<string> = new Set()
 
   private chatHeader: HTMLElement | null
   private chatContainer: HTMLElement | null
@@ -55,7 +56,6 @@ export class ChatController {
       }
 
     } catch (error) {
-      console.error("Auth check failed:", error)
       window.location.href = "/public/auth.html"
     }
   }
@@ -105,7 +105,6 @@ export class ChatController {
       this.messageInput.value = ""
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to send message"
-      console.error("Error sending message:", errorMessage)
       alert("Error: " + errorMessage)
     }
   }
@@ -132,15 +131,22 @@ export class ChatController {
     const target = event.target as HTMLElement
     if (target.tagName !== "LI") return
 
+    const userId = parseInt(target.dataset.userid || "0", 10)
+    if (!userId) return
+
+    const isSameUser = this.selectedUserId === userId
+    const isConnected = this.chatService.isConnected()
+
+    if (isSameUser && isConnected) {
+      return
+    }
+
     const prevSelected = this.userList?.querySelector(".selected")
     if (prevSelected) {
       prevSelected.classList.remove("selected")
     }
 
     target.classList.add("selected")
-
-    const userId = parseInt(target.dataset.userid || "0", 10)
-    if (!userId) return
 
     this.selectedUserId = userId
     const username = target.textContent || "User"
@@ -153,11 +159,15 @@ export class ChatController {
       this.messagesDiv.innerHTML = ""
     }
 
+    this.displayedMessages.clear()
+
     if (this.messageForm) {
       this.messageForm.style.display = "flex"
     }
 
-    this.connectWebSocket()
+    if (!isSameUser || !isConnected) {
+      this.connectWebSocket()
+    }
     this.loadMessages()
   }
 
@@ -169,9 +179,7 @@ export class ChatController {
         (message) => this.handleIncomingMessage(message),
         (error) => this.handleWebSocketError(error)
       )
-      console.log("WebSocket connected successfully")
     } catch (error) {
-      console.error("Failed to connect WebSocket:", error)
       this.handleWebSocketError(error instanceof Error ? error.message : String(error))
     }
   }
@@ -189,14 +197,26 @@ export class ChatController {
       (message.sender_id === currentUserIdNum && message.receiver_id === selectedUserIdNum) ||
       (message.sender_id === selectedUserIdNum && message.receiver_id === currentUserIdNum)
     ) {
+      const messageKey = this.getMessageKey(message)
+      if (this.displayedMessages.has(messageKey)) {
+        return
+      }
+      this.displayedMessages.add(messageKey)
       const isSent = message.sender_id === currentUserIdNum
       this.addMessageToChat(message.text, isSent)
     }
   }
 
   private handleWebSocketError(error: string): void {
-    console.error("WebSocket error:", error)
     alert("Error: " + error)
+  }
+
+  private getMessageKey(message: Message): string {
+    if (message.id) {
+      return `id-${message.id}`
+    }
+    const timestamp = message.created_at ? String(message.created_at) : Date.now().toString()
+    return `${message.sender_id}-${message.receiver_id}-${message.text}-${timestamp}`
   }
 
   private addMessageToChat(text: string, isSent: boolean): void {
@@ -216,6 +236,7 @@ export class ChatController {
     const messages = await this.chatService.loadMessages(this.selectedUserId)
 
     this.messagesDiv.innerHTML = ""
+    this.displayedMessages.clear()
 
     if (messages.length === 0) {
       const emptyMsg = document.createElement("div")
@@ -233,6 +254,11 @@ export class ChatController {
     const currentUserIdNum = parseInt(currentUserId, 10)
 
     messages.forEach((msg) => {
+      const messageKey = this.getMessageKey(msg)
+      if (this.displayedMessages.has(messageKey)) {
+        return
+      }
+      this.displayedMessages.add(messageKey)
       const msgDiv = document.createElement("div")
       msgDiv.classList.add("message")
       const isSent = msg.sender_id === currentUserIdNum

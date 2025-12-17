@@ -39,7 +39,7 @@ func (s *ChatService) SendMessage(senderID, receiverID int64, text string) error
 		return err
 	}
 
-	return s.hub.SendMessage(senderID, receiverID, text)
+	return s.hub.SendMessage(msg)
 }
 
 

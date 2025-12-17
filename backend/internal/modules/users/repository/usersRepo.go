@@ -27,7 +27,7 @@ func NewUsersRepo(repo db.Repository) *UsersRepo {
 
 func (u *UsersRepo) GetAll(ctx context.Context) ([]*dto.PublicUser, error) {
 
-	records, err := u.repo.Get(u.table, nil) // no filters = all users
+	records, err := u.repo.Get(u.table, nil)
 	if err != nil {
 		return nil, err
 	}

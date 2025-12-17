@@ -1,8 +1,10 @@
 package hub
 
 import (
-	"github.com/gorilla/websocket"
 	"sync"
+
+	dto "lilyChat/internal/modules/dto"
+	"github.com/gorilla/websocket"
 )
 
 type Hub struct {
@@ -28,26 +30,36 @@ func (h *Hub) Unregister(userID int64) {
 	delete(h.clients, userID)
 }
 
-func (h *Hub) SendMessage(senderID, receiverID int64, text string) error {
+func (h *Hub) SendMessage(msg *dto.Message) error {
 	h.mu.Lock()
-	receiverConn, receiverOk := h.clients[receiverID]
-	senderConn, senderOk := h.clients[senderID]
+	receiverConn, receiverOk := h.clients[msg.ReceiverID]
+	senderConn, senderOk := h.clients[msg.SenderID]
 	h.mu.Unlock()
 	
 	messageData := map[string]interface{}{
 		"type":        "message",
-		"sender_id":   senderID,
-		"receiver_id": receiverID,
-		"text":        text,
+		"id":          msg.ID,
+		"sender_id":   msg.SenderID,
+		"receiver_id": msg.ReceiverID,
+		"text":        msg.Text,
+		"created_at": msg.CreatedAt,
 	}
-	
-	if receiverOk {
-		receiverConn.WriteJSON(messageData)
-	}
+
+	conns := []*websocket.Conn{}
 	
 	if senderOk {
-		senderConn.WriteJSON(messageData)
+		conns = append(conns, senderConn)
 	}
+
+	if receiverOk && receiverConn != senderConn {
+		conns = append(conns, receiverConn)
+	}
+
+	for _, conn := range conns {
+    	if err := conn.WriteJSON(messageData); err != nil {
+    	}
+	}
+
 	
 	return nil
 }

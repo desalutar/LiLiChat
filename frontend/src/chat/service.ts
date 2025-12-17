@@ -10,6 +10,10 @@ export class ChatService {
   private connectionPromise: Promise<void> | null = null
   private connectionResolve: (() => void) | null = null
   private connectionReject: ((error: Error) => void) | null = null
+  private reconnectAttempts: number = 0
+  private maxReconnectAttempts: number = 5
+  private reconnectTimeout: number | null = null
+  private shouldReconnect: boolean = true
 
   constructor() {
     this.api = new ApiClient()
@@ -29,8 +33,29 @@ export class ChatService {
   ): Promise<void> {
     this.onMessageCallback = onMessage
     this.onErrorCallback = onError
+    this.shouldReconnect = true
+
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout)
+      this.reconnectTimeout = null
+    }
+
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.reconnectAttempts = 0
+      if (this.connectionPromise) {
+        return this.connectionPromise
+      }
+      return Promise.resolve()
+    }
+
+    if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+      if (this.connectionPromise) {
+        return this.connectionPromise
+      }
+    }
 
     this.closeWebSocket()
+    this.reconnectAttempts = 0
 
     this.connectionPromise = new Promise<void>((resolve, reject) => {
       this.connectionResolve = resolve
@@ -40,13 +65,10 @@ export class ChatService {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
     const wsUrl = `${protocol}//${window.location.host}/api/1/ws`
 
-    console.log("Connecting to WebSocket:", wsUrl)
-
     this.ws = new WebSocket(wsUrl)
 
     const connectionTimeout = setTimeout(() => {
       if (this.ws && this.ws.readyState !== WebSocket.OPEN) {
-        console.error("WebSocket connection timeout")
         if (this.connectionReject) {
           this.connectionReject(new Error("WebSocket connection timeout"))
         }
@@ -55,20 +77,18 @@ export class ChatService {
     }, 10000)
 
     this.ws.onopen = () => {
-      console.log("WebSocket connection opened")
       clearTimeout(connectionTimeout)
     }
 
     this.ws.onmessage = (event) => {
       try {
         const data: WebSocketMessage = JSON.parse(event.data)
-        console.log("WebSocket message received:", data)
 
         if (data.type === "connected") {
-          console.log("WebSocket connected, user_id:", data.user_id)
           if (data.user_id) {
             this.currentUserId = String(data.user_id)
           }
+          this.reconnectAttempts = 0
           if (this.connectionResolve) {
             this.connectionResolve()
             this.connectionResolve = null
@@ -76,9 +96,11 @@ export class ChatService {
           }
         } else if (data.type === "message" && data.sender_id && data.receiver_id && data.text) {
           const message: Message = {
+            id: data.id,
             sender_id: data.sender_id,
             receiver_id: data.receiver_id,
             text: data.text,
+            created_at: data.created_at ? String(data.created_at) : undefined,
           }
           if (this.onMessageCallback) {
             this.onMessageCallback(message)
@@ -89,12 +111,10 @@ export class ChatService {
           }
         }
       } catch (error) {
-        console.error("Error parsing WebSocket message:", error)
       }
     }
 
     this.ws.onerror = (error) => {
-      console.error("WebSocket error:", error)
       clearTimeout(connectionTimeout)
       if (this.connectionReject) {
         this.connectionReject(new Error("WebSocket connection error"))
@@ -102,15 +122,35 @@ export class ChatService {
     }
 
     this.ws.onclose = (event) => {
-      console.log("WebSocket connection closed", event.code, event.reason)
       clearTimeout(connectionTimeout)
+      const wasOpen = this.ws !== null && this.ws.readyState === WebSocket.OPEN
       this.ws = null
+      
       if (this.connectionReject && this.connectionPromise) {
-        this.connectionReject(new Error(`WebSocket closed: ${event.reason || "Connection closed"}`))
+        if (!wasOpen || event.code !== 1000) {
+          this.connectionReject(new Error(`WebSocket closed: ${event.reason || "Connection closed"}`))
+        }
       }
+      
       this.connectionPromise = null
       this.connectionResolve = null
       this.connectionReject = null
+
+      if (this.shouldReconnect && event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnectAttempts++
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 10000)
+        
+        this.reconnectTimeout = window.setTimeout(() => {
+          if (this.onMessageCallback && this.onErrorCallback) {
+            this.connectWebSocket(this.onMessageCallback, this.onErrorCallback).catch((error) => {
+            })
+          }
+        }, delay)
+      } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        if (this.onErrorCallback) {
+          this.onErrorCallback("Failed to reconnect WebSocket after multiple attempts")
+        }
+      }
     }
 
     return this.connectionPromise
@@ -142,10 +182,18 @@ export class ChatService {
   }
 
   closeWebSocket(): void {
+    this.shouldReconnect = false
+    
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout)
+      this.reconnectTimeout = null
+    }
+
     if (this.ws) {
-      this.ws.close()
+      if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
+        this.ws.close(1000, "Normal closure")
+      }
       this.ws = null
-      console.log("WebSocket connection closed")
     }
     if (this.connectionReject) {
       this.connectionReject(new Error("WebSocket connection closed"))
@@ -153,6 +201,7 @@ export class ChatService {
     this.connectionPromise = null
     this.connectionResolve = null
     this.connectionReject = null
+    this.reconnectAttempts = 0
   }
 
   isConnected(): boolean {
@@ -173,7 +222,6 @@ export class ChatService {
 
       return Array.isArray(response.data) ? response.data : [response.data]
     } catch (error) {
-      console.error("Error searching users:", error)
       return []
     }
   }
@@ -195,7 +243,6 @@ export class ChatService {
 
       return response.data
     } catch (error) {
-      console.error("Error loading messages:", error)
       return []
     }
   }
@@ -204,7 +251,6 @@ export class ChatService {
     try {
       await this.api.post("/auth/logout", {})
     } catch (error) {
-      console.error("Logout error:", error)
     }
     this.currentUserId = null
     this.closeWebSocket()
