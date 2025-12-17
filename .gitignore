@@ -1,7 +1,3 @@
-# ============================================
-# Backend - Secrets and Config
-# ============================================
-
 # Config file with secrets - keep your actual secrets here locally
 backend/config/config.yml
 
@@ -12,16 +8,10 @@ backend/config/config.yml
 *.env
 !*.env.example
 
-# ============================================
-# Frontend - Dependencies and Build
-# ============================================
-
 # Node.js dependencies
 frontend/node_modules/
 node_modules/
 
-# Compiled JavaScript (generated from TypeScript)
-# These files are auto-generated from src/**/*.ts
 frontend/public/js/
 frontend/dist/
 
@@ -34,12 +24,7 @@ yarn-error.log*
 # TypeScript cache
 *.tsbuildinfo
 
-# Package manager files (optional - можно закоммитить для консистентности)
-# frontend/package-lock.json
-
-# ============================================
-# IDE and Editor files
-# ============================================
+frontend/package-lock.json
 
 # VS Code
 .vscode/
@@ -64,10 +49,6 @@ yarn-error.log*
 \#*\#
 .\#*
 
-# ============================================
-# OS files
-# ============================================
-
 # macOS
 .DS_Store
 .AppleDouble
@@ -84,17 +65,10 @@ $RECYCLE.BIN/
 .directory
 .Trash-*
 
-# ============================================
-# Docker
-# ============================================
-
 # Docker volumes (if any)
 *.volume
 
-# ============================================
 # Temporary files
-# ============================================
-
 *.tmp
 *.temp
 *.bak
