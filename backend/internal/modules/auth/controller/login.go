@@ -2,12 +2,12 @@ package controller
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-	"time"
 
 	"lilyChat/internal/infrastructure/components"
-	dto "lilyChat/internal/modules/dto"
 	authService "lilyChat/internal/modules/auth/service"
+	dto "lilyChat/internal/modules/dto"
 )
 
 type Auther interface {
@@ -49,33 +49,12 @@ func (c *AuthController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, refreshToken, userID, err := c.authService.LoginUser(req.Username, req.Password)
+	_, _, userID, err := c.authService.LoginUser(req.Username, req.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "access_token",
-		Value:    accessToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   3600,
-		Expires:  time.Now().Add(1 * time.Hour),
-	})
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    refreshToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   604800,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-	})
+	log.Printf("[LOGIN] User %s logged in successfully (userID=%d) from %s", req.Username, userID, r.RemoteAddr)
 
 	resp := dto.LoginResponse{
 		UserID: userID,
@@ -86,28 +65,6 @@ func (c *AuthController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AuthController) LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "access_token",
-		Value:    "",
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   -1,
-		Expires:  time.Now().Add(-1 * time.Hour),
-	})
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    "",
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   -1,
-		Expires:  time.Now().Add(-1 * time.Hour),
-	})
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(dto.Response{Message: "logout successful"})
 }
