@@ -49,7 +49,7 @@ func (c *AuthController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _, userID, err := c.authService.LoginUser(req.Username, req.Password)
+	accessToken, _, userID, err := c.authService.LoginUser(req.Username, req.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -57,7 +57,8 @@ func (c *AuthController) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[LOGIN] User %s logged in successfully (userID=%d) from %s", req.Username, userID, r.RemoteAddr)
 
 	resp := dto.LoginResponse{
-		UserID: userID,
+		UserID:      userID,
+		AccessToken: accessToken,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

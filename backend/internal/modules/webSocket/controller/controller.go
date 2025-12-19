@@ -2,9 +2,10 @@ package controller
 
 import (
 	"net/http"
+	"strings"
 
 	dto "lilyChat/internal/modules/dto"
-	"lilyChat/internal/infrastructure/middleware"
+	"lilyChat/internal/infrastructure/utils"
 	"lilyChat/internal/modules/webSocket/service"
 
 	"github.com/gorilla/websocket"
@@ -16,13 +17,43 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func WSHandler(chatSvc service.ChatServicer) http.HandlerFunc {
+func extractToken(r *http.Request) string {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "" {
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) == 2 && parts[0] == "Bearer" {
+			return parts[1]
+		}
+	}
+
+	cookie, err := r.Cookie("access_token")
+	if err == nil && cookie != nil && cookie.Value != "" {
+		return cookie.Value
+	}
+
+	token := r.URL.Query().Get("token")
+	if token != "" {
+		return token
+	}
+
+	return ""
+}
+
+func WSHandler(chatSvc service.ChatServicer, jwtCfg *utils.JTW) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, ok := middleware.GetUserIDFromContext(r.Context())
-		if !ok {
-			http.Error(w, "User ID not found in context", http.StatusUnauthorized)
+		tokenStr := extractToken(r)
+		if tokenStr == "" {
+			http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
 			return
 		}
+
+		claims, err := utils.JWTokener.VerifyToken(jwtCfg, tokenStr)
+		if err != nil {
+			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+			return
+		}
+
+		userID := claims.UserID
 
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {

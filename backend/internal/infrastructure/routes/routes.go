@@ -34,7 +34,6 @@ func NewApiRouter(controllers *modules.Controller, components *components.Compon
 		})
 
 		r.Route("/ws", func(r chi.Router) {
-			r.Use(authCheck)
 			r.Get("/", controllers.Chat)
 		})
 	})

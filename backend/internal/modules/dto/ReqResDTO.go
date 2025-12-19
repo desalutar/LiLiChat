@@ -20,7 +20,8 @@ type TokenResponse struct {
 }
 
 type LoginResponse struct {
-	UserID int64 `json:"user_id"`
+	UserID      int64  `json:"user_id"`
+	AccessToken string `json:"access_token"`
 }
 
 type LoginRequest struct {

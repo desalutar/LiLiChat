@@ -17,7 +17,7 @@ type Controller struct {
 func NewController(services Services, components *components.Components) *Controller {
 	authController := auth.NewAuthController(services.auth, components)
 	usersController := users.NewUsersController(services.users, components)
-	chatHandler := wsController.WSHandler(services.chat)
+	chatHandler := wsController.WSHandler(services.chat, &components.JWT)
 
 	return &Controller{
 		Auth: authController,
