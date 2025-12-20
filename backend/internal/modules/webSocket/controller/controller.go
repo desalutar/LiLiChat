@@ -16,7 +16,7 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 }
-
+ 
 func extractToken(r *http.Request) string {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "" {
